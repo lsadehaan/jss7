@@ -753,20 +753,19 @@ public class DialogImpl implements Dialog {
                 // indication primitive
                 this.idleTimerActionTaken = true;
                 stopIdleTimer();
+
+                if (event.getTerminationType() != TerminationType.Basic)
+                    // we do not send TC-END in PreArranged closing case
+                    return;
+
                 tcbm = (TCEndMessageImpl) TcapFactory.createTCEndMessage();
                 tcbm.setDestinationTransactionId(this.remoteTransactionId);
 
-                if (event.getTerminationType() == TerminationType.Basic) {
-                    if (this.scheduledComponentList.size() > 0) {
-                        Component[] componentsToSend = new Component[this.scheduledComponentList.size()];
-                        this.prepareComponents(componentsToSend);
-                        tcbm.setComponent(componentsToSend);
+                if (this.scheduledComponentList.size() > 0) {
+                    Component[] componentsToSend = new Component[this.scheduledComponentList.size()];
+                    this.prepareComponents(componentsToSend);
+                    tcbm.setComponent(componentsToSend);
 
-                    }
-                } else if (event.getTerminationType() == TerminationType.PreArranged) {
-                    this.scheduledComponentList.clear();
-                } else {
-                    throw new TCAPSendException("Termination TYPE must be present");
                 }
 
                 ApplicationContextName acn = event.getApplicationContextName();
@@ -801,20 +800,19 @@ public class DialogImpl implements Dialog {
 
             } else if (state == TRPseudoState.Active) {
                 restartIdleTimer();
+
+                if (event.getTerminationType() != TerminationType.Basic)
+                    // we do not send TC-END in PreArranged closing case
+                    return;
+
                 tcbm = (TCEndMessageImpl) TcapFactory.createTCEndMessage();
 
                 tcbm.setDestinationTransactionId(this.remoteTransactionId);
-                if (event.getTerminationType() == TerminationType.Basic) {
-                    if (this.scheduledComponentList.size() > 0) {
-                        Component[] componentsToSend = new Component[this.scheduledComponentList.size()];
-                        this.prepareComponents(componentsToSend);
-                        tcbm.setComponent(componentsToSend);
+                if (this.scheduledComponentList.size() > 0) {
+                    Component[] componentsToSend = new Component[this.scheduledComponentList.size()];
+                    this.prepareComponents(componentsToSend);
+                    tcbm.setComponent(componentsToSend);
 
-                    }
-                } else if (event.getTerminationType() == TerminationType.PreArranged) {
-                    this.scheduledComponentList.clear();
-                } else {
-                    throw new TCAPSendException("Termination TYPE must be present");
                 }
 
                 // ITU - T Q774 Section 3.2.2.1 Dialogue Control
@@ -1237,14 +1235,12 @@ public class DialogImpl implements Dialog {
         TCEndMessageImpl tcbm = (TCEndMessageImpl) TcapFactory.createTCEndMessage();
         tcbm.setDestinationTransactionId(this.remoteTransactionId);
 
-        if (event.getTerminationType() == TerminationType.Basic) {
-            if (this.scheduledComponentList.size() > 0) {
-                Component[] componentsToSend = new Component[this.scheduledComponentList.size()];
-                for (int index = 0; index < this.scheduledComponentList.size(); index++) {
-                    componentsToSend[index] = this.scheduledComponentList.get(index);
-                }
-                tcbm.setComponent(componentsToSend);
+        if (this.scheduledComponentList.size() > 0) {
+            Component[] componentsToSend = new Component[this.scheduledComponentList.size()];
+            for (int index = 0; index < this.scheduledComponentList.size(); index++) {
+                componentsToSend[index] = this.scheduledComponentList.get(index);
             }
+            tcbm.setComponent(componentsToSend);
         }
 
         if (state == TRPseudoState.InitialReceived) {
@@ -2136,7 +2132,10 @@ public class DialogImpl implements Dialog {
                 if (d.idleTimerActionTaken) {
                     startIdleTimer();
                 } else {
-                    sendAbnormalDialog();
+                    if (remoteTransactionId != null)
+                        sendAbnormalDialog();
+                    else
+                        release();
                 }
 
             } finally {
@@ -2235,6 +2234,10 @@ public class DialogImpl implements Dialog {
 
     public void setRemotePc(int remotePc) {
         this.remotePc = remotePc;
+    }
+
+    public long getStartTimeDialog() {
+        return this.startDialogTime;
     }
 
     /*

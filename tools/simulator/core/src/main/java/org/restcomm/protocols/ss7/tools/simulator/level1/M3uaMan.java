@@ -45,7 +45,7 @@ import org.restcomm.protocols.ss7.m3ua.parameter.TrafficModeType;
 import org.restcomm.protocols.ss7.mtp.Mtp3UserPart;
 import org.restcomm.protocols.ss7.mtp.RoutingLabelFormat;
 import org.restcomm.protocols.ss7.tools.simulator.Stoppable;
-import org.restcomm.protocols.ss7.tools.simulator.management.TesterHost;
+import org.restcomm.protocols.ss7.tools.simulator.management.TesterHostImpl;
 
 /**
  *
@@ -56,8 +56,8 @@ public class M3uaMan implements M3uaManMBean, Stoppable {
 
     public static String SOURCE_NAME = "M3UA";
 
-    private final String name;
-    private TesterHost testerHost;
+    protected final String name;
+    private TesterHostImpl testerHost;
     private NettySctpManagementImpl sctpManagement;
     private ParameterFactoryImpl factory = new ParameterFactoryImpl();
     private M3UAManagementProxyImpl m3uaMgmt;
@@ -83,7 +83,7 @@ public class M3uaMan implements M3uaManMBean, Stoppable {
         this.name = name;
     }
 
-    public void setTesterHost(TesterHost testerHost) {
+    public void setTesterHost(TesterHostImpl testerHost) {
         this.testerHost = testerHost;
     }
 
@@ -621,6 +621,10 @@ public class M3uaMan implements M3uaManMBean, Stoppable {
         }
     }
 
+    protected M3UAManagementProxyImpl createM3UAManagement() {
+        return new M3UAManagementProxyImpl("SimM3uaServer_" + name, null, null);
+    }
+
     private void initM3ua(boolean storePcapTrace, boolean isSctpServer, String localHost, int localPort, String remoteHost, int remotePort, String localHost2,
             int localPort2, String remoteHost2, int remotePort2, IpChannelType ipChannelType, String[] extraHostAddresses, String persistDir,
             int trafficModeTypeInt, RoutingLabelFormat routingLabelFormat) throws Exception {
@@ -640,7 +644,7 @@ public class M3uaMan implements M3uaManMBean, Stoppable {
         Thread.sleep(500); // waiting for freeing ip ports
 
         // init M3UA stack
-        this.m3uaMgmt = new M3UAManagementProxyImpl("SimM3uaServer_" + name);
+        this.m3uaMgmt = createM3UAManagement();
         this.m3uaMgmt.setPersistDir(persistDir);
         this.m3uaMgmt.setTransportManagement(this.sctpManagement);
         this.m3uaMgmt.setRoutingLabelFormat(routingLabelFormat);

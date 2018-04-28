@@ -40,6 +40,10 @@ import org.restcomm.protocols.ss7.sccp.SccpResource;
 import org.restcomm.protocols.ss7.sccp.impl.SccpStackImpl;
 import org.restcomm.protocols.ss7.sccp.impl.parameter.LocalReferenceImpl;
 import org.restcomm.protocols.ss7.sccp.parameter.ParameterFactory;
+import org.restcomm.protocols.ss7.scheduler.Clock;
+import org.restcomm.protocols.ss7.scheduler.DefaultClock;
+import org.restcomm.protocols.ss7.scheduler.Scheduler;
+import org.restcomm.protocols.ss7.ss7ext.Ss7ExtInterface;
 
 import static org.testng.Assert.assertEquals;
 
@@ -80,15 +84,20 @@ public abstract class SccpHarness {
     }
 
     protected void createStack1() {
-        sccpStack1 = createStack(sccpStack1Name);
+        sccpStack1 = createStack(sccpStack1Name, null);
     }
 
     protected void createStack2() {
-        sccpStack2 = createStack(sccpStack2Name);
+        sccpStack2 = createStack(sccpStack2Name, null);
     }
 
-    protected SccpStackImpl createStack(final String name) {
-        SccpStackImpl stack = new SccpStackImpl(name);
+    protected SccpStackImpl createStack(final String name, Ss7ExtInterface ss7ExtInterface) {
+        Clock clock = new DefaultClock();
+        Scheduler scheduler = new Scheduler();
+        scheduler.setClock(clock);
+        scheduler.start();
+
+        SccpStackImpl stack = new SccpStackImpl(scheduler, name, ss7ExtInterface);
         final String dir = Util.getTmpTestDir();
         if (dir != null) {
             stack.setPersistDir(dir);

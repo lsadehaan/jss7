@@ -39,6 +39,8 @@ import javax.management.remote.JMXConnectorServer;
 import javax.management.remote.JMXConnectorServerFactory;
 import javax.management.remote.JMXServiceURL;
 
+import org.restcomm.protocols.ss7.tools.simulator.level1.DialogicManMBean;
+import org.restcomm.protocols.ss7.tools.simulator.level1.DialogicManStandardMBean;
 import org.restcomm.protocols.ss7.tools.simulator.level1.M3uaManMBean;
 import org.restcomm.protocols.ss7.tools.simulator.level1.M3uaManStandardMBean;
 import org.restcomm.protocols.ss7.tools.simulator.level2.SccpManMBean;
@@ -47,7 +49,7 @@ import org.restcomm.protocols.ss7.tools.simulator.level3.CapManMBean;
 import org.restcomm.protocols.ss7.tools.simulator.level3.CapManStandardMBean;
 import org.restcomm.protocols.ss7.tools.simulator.level3.MapManMBean;
 import org.restcomm.protocols.ss7.tools.simulator.level3.MapManStandardMBean;
-import org.restcomm.protocols.ss7.tools.simulator.management.TesterHost;
+import org.restcomm.protocols.ss7.tools.simulator.management.TesterHostInterface;
 import org.restcomm.protocols.ss7.tools.simulator.management.TesterHostMBean;
 import org.restcomm.protocols.ss7.tools.simulator.management.TesterHostStandardMBean;
 import org.restcomm.protocols.ss7.tools.simulator.tests.ati.TestAtiClientManMBean;
@@ -188,7 +190,11 @@ public class MainCore {
 
     }
 
-    private static void parseRmi(int[] rmiPort, String s1) {
+    protected TesterHostFactoryInterface getTesterHostFactory() {
+        return new TesterHostFactoryImpl();
+    }
+
+    protected static void parseRmi(int[] rmiPort, String s1) {
         String[] ss = s1.split(",");
         int porta = Integer.parseInt(ss[0]);
         if (porta > 0 && porta < 65000)
@@ -241,10 +247,10 @@ public class MainCore {
         }
 
         // Tester host initializing
-        String sim_home = System.getProperty(TesterHost.SIMULATOR_HOME_VAR);
+        String sim_home = System.getProperty(TesterHostInterface.SIMULATOR_HOME_VAR);
         if (sim_home != null)
             sim_home += File.separator + "data";
-        TesterHost host = new TesterHost(appName, sim_home);
+        TesterHostInterface host = getTesterHostFactory().createTesterHost(appName, sim_home);
 
         JMXConnectorServer cs = null;
         Registry reg = null;
@@ -256,9 +262,8 @@ public class MainCore {
             M3uaManStandardMBean m3uaMBean = new M3uaManStandardMBean(host.getM3uaMan(), M3uaManMBean.class);
             mbs.registerMBean(m3uaMBean, nameM3uaMan);
 
-            // !!! DIALODIG !!!
-//            DialogicManStandardMBean dialogicMBean = new DialogicManStandardMBean(host.getDialogicMan(), DialogicManMBean.class);
-//            mbs.registerMBean(dialogicMBean, nameDialogicMan);
+            DialogicManStandardMBean dialogicMBean = new DialogicManStandardMBean(host.getDialogicMan(), DialogicManMBean.class);
+            mbs.registerMBean(dialogicMBean, nameDialogicMan);
 
             SccpManStandardMBean sccpMBean = new SccpManStandardMBean(host.getSccpMan(), SccpManMBean.class);
             mbs.registerMBean(sccpMBean, nameSccpMan);

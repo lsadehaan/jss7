@@ -31,7 +31,6 @@ import org.restcomm.protocols.ss7.sccp.impl.SccpManagement;
 import org.restcomm.protocols.ss7.sccp.impl.SccpProviderImpl;
 import org.restcomm.protocols.ss7.sccp.impl.SccpRoutingControl;
 import org.restcomm.protocols.ss7.sccp.impl.SccpStackImpl;
-import org.restcomm.protocols.ss7.sccp.impl.congestion.SccpCongestionControl;
 import org.restcomm.protocols.ss7.sccp.impl.mgmt.Mtp3PrimitiveMessage;
 import org.restcomm.protocols.ss7.sccp.impl.mgmt.SccpMgmtMessage;
 import org.restcomm.protocols.ss7.sccp.message.SccpDataMessage;
@@ -85,20 +84,20 @@ public class SccpManagementProxy extends SccpManagement {
         return super.getSccpRoutingControl();
     }
 
-    public SccpCongestionControl getSccpCongestionControl() {
-
-        return super.getSccpCongestionControl();
-    }
+//    public SccpCongestionControl getSccpCongestionControl() {
+//
+//        return super.getSccpCongestionControl();
+//    }
 
     public void setSccpRoutingControl(SccpRoutingControl sccpRoutingControl) {
 
         super.setSccpRoutingControl(sccpRoutingControl);
     }
 
-    public void setSccpCongestionControl(SccpCongestionControl sccpCongestionControl) {
-
-        super.setSccpCongestionControl(sccpCongestionControl);
-    }
+//    public void setSccpCongestionControl(SccpCongestionControl sccpCongestionControl) {
+//
+//        super.setSccpCongestionControl(sccpCongestionControl);
+//    }
 
     @Override
     public void onManagementMessage(SccpDataMessage message) {
@@ -137,7 +136,7 @@ public class SccpManagementProxy extends SccpManagement {
     }
 
     @Override
-    protected void handleMtp3Pause(int affectedPc) {
+    public void handleMtp3Pause(int affectedPc) {
         super.handleMtp3Pause(affectedPc);
 
         Mtp3PrimitiveMessage prim = new Mtp3PrimitiveMessage(seq++, MTP3_PAUSE, affectedPc);

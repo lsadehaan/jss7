@@ -371,12 +371,14 @@ import org.restcomm.protocols.ss7.map.api.service.oam.TraceNETypeList;
 import org.restcomm.protocols.ss7.map.api.service.oam.TraceReference;
 import org.restcomm.protocols.ss7.map.api.service.oam.TraceType;
 import org.restcomm.protocols.ss7.map.api.service.oam.TraceTypeInvokingEvent;
+import org.restcomm.protocols.ss7.map.api.service.sms.CorrelationID;
 import org.restcomm.protocols.ss7.map.api.service.sms.IpSmGwGuidance;
 import org.restcomm.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
 import org.restcomm.protocols.ss7.map.api.service.sms.MWStatus;
 import org.restcomm.protocols.ss7.map.api.service.sms.SM_RP_DA;
 import org.restcomm.protocols.ss7.map.api.service.sms.SM_RP_OA;
 import org.restcomm.protocols.ss7.map.api.service.sms.SM_RP_SMEA;
+import org.restcomm.protocols.ss7.map.api.service.sms.SipUri;
 import org.restcomm.protocols.ss7.map.api.service.sms.SmsSignalInfo;
 import org.restcomm.protocols.ss7.map.api.service.supplementary.CCBSFeature;
 import org.restcomm.protocols.ss7.map.api.service.supplementary.CallBarringFeature;
@@ -484,7 +486,20 @@ public interface MAPParameterFactory {
      */
     AddressString createAddressString(AddressNature addNature, NumberingPlan numPlan, String address);
 
+    /**
+     * Creates a new instance of {@link AddressString}
+     *
+     * @param extension
+     * @param addNature The nature of this AddressString. See
+     * {@link AddressNature}.
+     * @param numPlan The {@link NumberingPlan} of this AddressString
+     * @param address The actual address (number)
+     * @return new instance of {@link AddressString}
+     */
+    AddressString createAddressString(boolean extension, AddressNature addNature, NumberingPlan numPlan, String address);
+
     ISDNAddressString createISDNAddressString(AddressNature addNature, NumberingPlan numPlan, String address);
+    ISDNAddressString createISDNAddressString(boolean extension, AddressNature addNature, NumberingPlan numPlan, String address);
 
     FTNAddressString createFTNAddressString(AddressNature addNature, NumberingPlan numPlan, String address);
 
@@ -1519,5 +1534,9 @@ public interface MAPParameterFactory {
 
     IpSmGwGuidance createIpSmGwGuidance(int minimumDeliveryTimeValue, int recommendedDeliveryTimeValue,
             MAPExtensionContainer extensionContainer);
+
+    CorrelationID createCorrelationID(IMSI hlrId, SipUri sipUriA, SipUri sipUriB);
+
+    SipUri createSipUri();
 
 }

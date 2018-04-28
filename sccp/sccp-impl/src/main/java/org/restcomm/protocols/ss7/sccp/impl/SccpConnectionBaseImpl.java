@@ -39,7 +39,7 @@ import static org.restcomm.protocols.ss7.sccp.SccpConnectionState.RSR_RECEIVED;
 import static org.restcomm.protocols.ss7.sccp.SccpConnectionState.RSR_RECEIVED_WILL_PROPAGATE;
 import static org.restcomm.protocols.ss7.sccp.SccpConnectionState.RSR_SENT;
 
-abstract class SccpConnectionBaseImpl {
+public abstract class SccpConnectionBaseImpl {
 
     protected final Logger logger;
     protected SccpStackImpl stack;
@@ -324,6 +324,10 @@ abstract class SccpConnectionBaseImpl {
         return remoteSsn;
     }
 
+    public void setRemoteSsn(Integer val) {
+        remoteSsn = val;
+    }
+
     public SccpListener getListener() {
         return stack.sccpProvider.getSccpListener(localSsn);
     }
@@ -368,7 +372,7 @@ abstract class SccpConnectionBaseImpl {
         throw new IllegalArgumentException("receiveCredit is supported only by flow control connection-oriented protocol class");
     }
 
-    protected abstract void prepareMessageForSending(SccpConnSegmentableMessageImpl message);
+    public abstract void prepareMessageForSending(SccpConnSegmentableMessageImpl message);
     protected abstract void prepareMessageForSending(SccpConnItMessageImpl message);
     protected abstract void callListenerOnData(byte[] data);
 }

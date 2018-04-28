@@ -763,6 +763,12 @@ public class M3UAShellExecutor implements ShellExecutor {
         if (parName.equals("heartbeattime")) {
             int val = Integer.parseInt(options[3]);
             this.m3uaManagement.setHeartbeatTime(val);
+        } else if(parName.equals("statisticsenabled")){
+            boolean val = Boolean.parseBoolean(options[3]);
+            this.m3uaManagement.setStatisticsEnabled(val);
+        } else if(parName.equals("routingkeymanagementenabled")){
+            boolean val = Boolean.parseBoolean(options[3]);
+            this.m3uaManagement.setRoutingKeyManagementEnabled(val);
         } else if (parName.equals("routinglabelformat")) {
             String vals = options[3];
             RoutingLabelFormat rlf = Enum.valueOf(RoutingLabelFormat.class, vals);
@@ -800,6 +806,10 @@ public class M3UAShellExecutor implements ShellExecutor {
                 sb.append(this.m3uaManagement.getMaxAsForRoute());
             } else if (parName.equals("heartbeattime")) {
                 sb.append(this.m3uaManagement.getHeartbeatTime());
+            } else if (parName.equals("statisticsenabled")) {
+                sb.append(this.m3uaManagement.getStatisticsEnabled());
+            } else if (parName.equals("routingkeymanagementenabled")) {
+                sb.append(this.m3uaManagement.getRoutingKeyManagementEnabled());
             } else if (parName.equals("routinglabelformat")) {
                 sb.append(this.m3uaManagement.getRoutingLabelFormat());
             } else if (parName.equals("uselsbforlinksetselection")) {
@@ -835,6 +845,14 @@ public class M3UAShellExecutor implements ShellExecutor {
 
                 sb.append("heartbeattime = ");
                 sb.append(managementImplTmp.getHeartbeatTime());
+                sb.append("\n");
+
+                sb.append("statisticsenabled = ");
+                sb.append(managementImplTmp.getStatisticsEnabled());
+                sb.append("\n");
+
+                sb.append("routingkeymanagementenabled = ");
+                sb.append(managementImplTmp.getRoutingKeyManagementEnabled());
                 sb.append("\n");
 
                 sb.append("routinglabelformat = ");

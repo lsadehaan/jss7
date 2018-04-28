@@ -25,6 +25,9 @@ package org.restcomm.protocols.ss7.map.service.mobility.subscriberManagement;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 
+import javolution.xml.XMLFormat;
+import javolution.xml.stream.XMLStreamException;
+
 import org.restcomm.protocols.ss7.map.api.MAPException;
 import org.restcomm.protocols.ss7.map.api.service.mobility.subscriberManagement.APN;
 import org.restcomm.protocols.ss7.map.primitives.OctetStringBase;
@@ -35,6 +38,10 @@ import org.restcomm.protocols.ss7.map.primitives.OctetStringBase;
  *
  */
 public class APNImpl extends OctetStringBase implements APN {
+
+    private static final String DATA = "data";
+
+    private static final String DEFAULT_VALUE = null;
 
     private static Charset ascii = Charset.forName("US-ASCII");
 
@@ -54,6 +61,10 @@ public class APNImpl extends OctetStringBase implements APN {
         if (apn.length() == 0)
             throw new MAPException("apn paramater must not have zero length");
 
+        setApnString(apn);
+    }
+
+    private void setApnString(String apn) throws MAPException {
         String[] ss = apn.split("\\.");
         int tLen = ss.length;
         for (String s : ss) {
@@ -129,4 +140,31 @@ public class APNImpl extends OctetStringBase implements APN {
             return super.toString();
         }
     }
+
+    /**
+     * XML Serialization/Deserialization
+     */
+    protected static final XMLFormat<APNImpl> APN_XML = new XMLFormat<APNImpl>(APNImpl.class) {
+
+        @Override
+        public void read(javolution.xml.XMLFormat.InputElement xml, APNImpl apn) throws XMLStreamException {
+            String s = xml.getAttribute(DATA, DEFAULT_VALUE);
+            if (s != null && s.length() > 0) {
+                try {
+                    apn.setApnString(s);
+                } catch (MAPException e) {
+                }
+            }
+        }
+
+        @Override
+        public void write(APNImpl apn, javolution.xml.XMLFormat.OutputElement xml) throws XMLStreamException {
+            if (apn.data != null) {
+                try {
+                    xml.setAttribute(DATA, apn.getApn());
+                } catch (Exception e) {
+                }
+            }
+        }
+    };
 }

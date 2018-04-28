@@ -40,6 +40,7 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import org.restcomm.protocols.ss7.tools.simulator.common.EnumeratedBase;
+import org.restcomm.protocols.ss7.tools.simulator.level1.DialogicManMBean;
 import org.restcomm.protocols.ss7.tools.simulator.level1.M3uaManMBean;
 import org.restcomm.protocols.ss7.tools.simulator.level2.SccpManMBean;
 import org.restcomm.protocols.ss7.tools.simulator.level3.CapManMBean;
@@ -48,7 +49,7 @@ import org.restcomm.protocols.ss7.tools.simulator.management.Instance_L1;
 import org.restcomm.protocols.ss7.tools.simulator.management.Instance_L2;
 import org.restcomm.protocols.ss7.tools.simulator.management.Instance_L3;
 import org.restcomm.protocols.ss7.tools.simulator.management.Instance_TestTask;
-import org.restcomm.protocols.ss7.tools.simulator.management.TesterHost;
+import org.restcomm.protocols.ss7.tools.simulator.management.TesterHostInterface;
 import org.restcomm.protocols.ss7.tools.simulator.management.TesterHostMBean;
 import org.restcomm.protocols.ss7.tools.simulator.tests.ati.TestAtiClientManMBean;
 import org.restcomm.protocols.ss7.tools.simulator.tests.ati.TestAtiServerManMBean;
@@ -96,11 +97,10 @@ public class SimulatorGuiForm extends JFrame implements NotificationListener {
 
     private static final long serialVersionUID = 3154289048277602010L;
 
-    private TesterHost hostImpl;
+    private TesterHostInterface hostImpl;
     private TesterHostMBean host;
     private M3uaManMBean m3ua;
- // !!! DIALODIG !!!
-//    private DialogicManMBean dialogic;
+    private DialogicManMBean dialogic;
     private SccpManMBean sccp;
     private MapManMBean map;
     private CapManMBean cap;
@@ -235,13 +235,12 @@ public class SimulatorGuiForm extends JFrame implements NotificationListener {
                         frame.setVisible(true);
                     }
                         break;
-                     // !!! DIALODIG !!!
-//                    case Instance_L1.VAL_DIALOGIC: {
-//                        DialogicForm frame = new DialogicForm(getJFrame());
-//                        frame.setData(dialogic);
-//                        frame.setVisible(true);
-//                    }
-//                        break;
+                    case Instance_L1.VAL_DIALOGIC: {
+                        DialogicForm frame = new DialogicForm(getJFrame());
+                        frame.setData(dialogic);
+                        frame.setVisible(true);
+                    }
+                        break;
                 }
             }
         });
@@ -508,20 +507,19 @@ public class SimulatorGuiForm extends JFrame implements NotificationListener {
         this.cbTestTask.setEnabled(enabled);
     }
 
- // !!! DIALODIG !!!
-    protected void startHost(String appName, boolean isRemote, final TesterHost hostImpl, TesterHostMBean host, M3uaManMBean m3ua, /* DialogicManMBean dialogic, */
-            SccpManMBean sccp, MapManMBean map, CapManMBean cap, TestUssdClientManMBean ussdClient, TestUssdServerManMBean ussdServer,
-            TestSmsClientManMBean smsClient, TestSmsServerManMBean smsServer, TestCapScfManMBean capScf, TestCapSsfManMBean capSsf,
-            TestAtiClientManMBean atiClient, TestAtiServerManMBean atiServer,
-            TestCheckImeiClientManMBean checkImeiClient, TestCheckImeiServerManMBean checkImeiServer,
-            TestMapLcsClientManMBean mapLcsClient, TestMapLcsServerManMBean mapLcsServer) {
+    protected void startHost(String appName, boolean isRemote, final TesterHostInterface hostImpl, TesterHostMBean host,
+            M3uaManMBean m3ua, DialogicManMBean dialogic, SccpManMBean sccp, MapManMBean map, CapManMBean cap,
+            TestUssdClientManMBean ussdClient, TestUssdServerManMBean ussdServer, TestSmsClientManMBean smsClient,
+            TestSmsServerManMBean smsServer, TestCapScfManMBean capScf, TestCapSsfManMBean capSsf,
+            TestAtiClientManMBean atiClient, TestAtiServerManMBean atiServer, TestCheckImeiClientManMBean checkImeiClient,
+            TestCheckImeiServerManMBean checkImeiServer, TestMapLcsClientManMBean mapLcsClient,
+            TestMapLcsServerManMBean mapLcsServer) {
         setTitle(getTitle() + appName);
 
         this.hostImpl = hostImpl;
         this.host = host;
         this.m3ua = m3ua;
-     // !!! DIALODIG !!!
-//        this.dialogic = dialogic;
+        this.dialogic = dialogic;
         this.sccp = sccp;
         this.map = map;
         this.cap = cap;

@@ -52,13 +52,13 @@ public class Main {
     public static final String SIMULATOR_DATA = "simulator.data.dir";
     private static int index = 0;
 
-    private static Logger logger = Logger.getLogger(Main.class);
+    protected static Logger logger = Logger.getLogger(Main.class);
 
-    private String command = null;
-    private String appName = "main";
-    private int rmiPort = -1;
-    private int rmiPort2 = -1;
-    private int httpPort = -1;
+    protected String command = null;
+    protected String appName = "main";
+    protected int rmiPort = -1;
+    protected int rmiPort2 = -1;
+    protected int httpPort = -1;
 
     public static void main(String[] args) throws Throwable {
         String homeDir = getHomeDir(args);
@@ -77,7 +77,7 @@ public class Main {
         main.boot();
     }
 
-    private void processCommandLine(String[] args) {
+    protected void processCommandLine(String[] args) {
 
         String programName = System.getProperty("program.name", APP_NAME);
 
@@ -171,7 +171,7 @@ public class Main {
 
     }
 
-    private void genericHelp() {
+    protected void genericHelp() {
         System.out.println("usage: " + APP_NAME + "<command> [options]");
         System.out.println();
         System.out.println("command:");
@@ -207,7 +207,7 @@ public class Main {
         System.exit(0);
     }
 
-    private static boolean initLOG4JProperties(String homeDir) {
+    protected static boolean initLOG4JProperties(String homeDir) {
         String Log4jURL = homeDir + LOG4J_URL;
 
         try {
@@ -228,7 +228,7 @@ public class Main {
         return true;
     }
 
-    private static boolean initLOG4JXml(String homeDir) {
+    protected static boolean initLOG4JXml(String homeDir) {
         String Log4jURL = homeDir + LOG4J_URL_XML;
 
         try {
@@ -248,7 +248,7 @@ public class Main {
      * @param args the command line arguments
      * @return the path to the home directory.
      */
-    private static String getHomeDir(String[] args) {
+    protected static String getHomeDir(String[] args) {
         if (System.getenv(HOME_DIR) == null) {
             if (args.length > index) {
                 return args[index++];

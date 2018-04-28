@@ -488,12 +488,14 @@ import org.restcomm.protocols.ss7.map.api.service.oam.TraceNETypeList;
 import org.restcomm.protocols.ss7.map.api.service.oam.TraceReference;
 import org.restcomm.protocols.ss7.map.api.service.oam.TraceType;
 import org.restcomm.protocols.ss7.map.api.service.oam.TraceTypeInvokingEvent;
+import org.restcomm.protocols.ss7.map.api.service.sms.CorrelationID;
 import org.restcomm.protocols.ss7.map.api.service.sms.IpSmGwGuidance;
 import org.restcomm.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
 import org.restcomm.protocols.ss7.map.api.service.sms.MWStatus;
 import org.restcomm.protocols.ss7.map.api.service.sms.SM_RP_DA;
 import org.restcomm.protocols.ss7.map.api.service.sms.SM_RP_OA;
 import org.restcomm.protocols.ss7.map.api.service.sms.SM_RP_SMEA;
+import org.restcomm.protocols.ss7.map.api.service.sms.SipUri;
 import org.restcomm.protocols.ss7.map.api.service.sms.SmsSignalInfo;
 import org.restcomm.protocols.ss7.map.api.service.supplementary.CCBSFeature;
 import org.restcomm.protocols.ss7.map.api.service.supplementary.CallBarringFeature;
@@ -679,12 +681,14 @@ import org.restcomm.protocols.ss7.map.service.oam.TraceInterfaceListImpl;
 import org.restcomm.protocols.ss7.map.service.oam.TraceNETypeListImpl;
 import org.restcomm.protocols.ss7.map.service.oam.TraceReferenceImpl;
 import org.restcomm.protocols.ss7.map.service.oam.TraceTypeImpl;
+import org.restcomm.protocols.ss7.map.service.sms.CorrelationIDImpl;
 import org.restcomm.protocols.ss7.map.service.sms.IpSmGwGuidanceImpl;
 import org.restcomm.protocols.ss7.map.service.sms.LocationInfoWithLMSIImpl;
 import org.restcomm.protocols.ss7.map.service.sms.MWStatusImpl;
 import org.restcomm.protocols.ss7.map.service.sms.SM_RP_DAImpl;
 import org.restcomm.protocols.ss7.map.service.sms.SM_RP_OAImpl;
 import org.restcomm.protocols.ss7.map.service.sms.SM_RP_SMEAImpl;
+import org.restcomm.protocols.ss7.map.service.sms.SipUriImpl;
 import org.restcomm.protocols.ss7.map.service.sms.SmsSignalInfoImpl;
 import org.restcomm.protocols.ss7.map.service.supplementary.CCBSFeatureImpl;
 import org.restcomm.protocols.ss7.map.service.supplementary.CallBarringFeatureImpl;
@@ -789,8 +793,16 @@ public class MAPParameterFactoryImpl implements MAPParameterFactory {
         return new AddressStringImpl(addNature, numPlan, address);
     }
 
+    public AddressString createAddressString(boolean isExtension, AddressNature addNature, NumberingPlan numPlan, String address) {
+        return new AddressStringImpl(addNature, numPlan, address);
+    }
+
     public ISDNAddressString createISDNAddressString(AddressNature addNature, NumberingPlan numPlan, String address) {
         return new ISDNAddressStringImpl(addNature, numPlan, address);
+    }
+
+    public ISDNAddressString createISDNAddressString(boolean extension, AddressNature addNature, NumberingPlan numPlan, String address) {
+        return new ISDNAddressStringImpl(extension, addNature, numPlan, address);
     }
 
     public FTNAddressString createFTNAddressString(AddressNature addNature, NumberingPlan numPlan, String address) {
@@ -2828,6 +2840,19 @@ public class MAPParameterFactoryImpl implements MAPParameterFactory {
     public IpSmGwGuidance createIpSmGwGuidance(int minimumDeliveryTimeValue, int recommendedDeliveryTimeValue,
             MAPExtensionContainer extensionContainer) {
         return new IpSmGwGuidanceImpl(minimumDeliveryTimeValue, recommendedDeliveryTimeValue, extensionContainer);
+    }
+
+    @Override
+    public CorrelationID createCorrelationID(IMSI hlrId, SipUri sipUriA, SipUri sipUriB) {
+        return new CorrelationIDImpl(hlrId, sipUriA, sipUriB);
+    }
+
+    /* (non-Javadoc)
+     * @see org.restcomm.protocols.ss7.map.api.MAPParameterFactory#createSipUri()
+     */
+    @Override
+    public SipUri createSipUri() {
+        return new SipUriImpl();
     }
 }
 
