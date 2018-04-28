@@ -3,6 +3,16 @@
 # ignore Maven generated target folders
 ~
 target
+# ignore vs code files
+.vscode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+.sts4-cache
+
 # ignore eclipse files
 .project
 .classpath
