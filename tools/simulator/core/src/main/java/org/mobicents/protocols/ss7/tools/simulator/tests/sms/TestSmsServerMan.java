@@ -27,6 +27,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 
 import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContext;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextName;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
@@ -101,8 +102,8 @@ import org.mobicents.protocols.ss7.tools.simulator.management.TesterHost;
  * @author sergey vetyutnev
  *
  */
-public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBean, Stoppable, MAPDialogListener, MAPServiceSmsListener {
-
+public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBean, Stoppable, MAPDialogListener, MAPServiceSmsListener, MAPServiceCallHandlingListener {
+    private static final Logger logger = Logger.getLogger(TestSmsServerMan.class);
     public static String SOURCE_NAME = "TestSmsServer";
 
     private final String name;
@@ -400,8 +401,8 @@ public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBea
         this.countAscResp = 0;
 
         MAPProvider mapProvider = this.mapMan.getMAPStack().getMAPProvider();
-        mapProvider.getMAPServiceSms().acivate();
-        mapProvider.getMAPServiceSms().addMAPServiceListener(this);
+        mapProvider.getMAPServiceCallHandling().acivate();
+        mapProvider.getMAPServiceCallHandling().addMAPServiceListener(this);
         mapProvider.addMAPDialogListener(this);
         this.testerHost.sendNotif(SOURCE_NAME, "SMS Server has been started", "", Level.INFO);
         isStarted = true;
@@ -413,8 +414,8 @@ public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBea
     public void stop() {
         MAPProvider mapProvider = this.mapMan.getMAPStack().getMAPProvider();
         isStarted = false;
-        mapProvider.getMAPServiceSms().deactivate();
-        mapProvider.getMAPServiceSms().removeMAPServiceListener(this);
+        mapProvider.getMAPServiceCallHandling().deactivate();
+        mapProvider.getMAPServiceCallHandling().removeMAPServiceListener(this);
         mapProvider.removeMAPDialogListener(this);
         this.testerHost.sendNotif(SOURCE_NAME, "SMS Server has been stopped", "", Level.INFO);
     }
@@ -431,6 +432,8 @@ public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBea
 
     @Override
     public String performSRIForSM(String destIsdnNumber) {
+        logger.info("entering performSRIForSM");
+
         if (!isStarted)
             return "The tester is not started";
         if (destIsdnNumber == null || destIsdnNumber.equals(""))
@@ -444,8 +447,9 @@ public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBea
     private String curDestIsdnNumber = null;
 
     private String doSendSri(String destIsdnNumber, String serviceCentreAddr, MtMessageData messageData) {
-
+        logger.info("entering doSendSri");
         MAPProvider mapProvider = this.mapMan.getMAPStack().getMAPProvider();
+        logger.info("Got map provider");
 
         MAPApplicationContextVersion vers;
         switch (this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getMapProtocolVersion().intValue()) {
@@ -459,7 +463,8 @@ public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBea
             vers = MAPApplicationContextVersion.version3;
             break;
         }
-        MAPApplicationContext mapAppContext = MAPApplicationContext.getInstance(MAPApplicationContextName.shortMsgGatewayContext, vers);
+        MAPApplicationContext mapAppContext = MAPApplicationContext.getInstance(MAPApplicationContextName.locationInfoRetrievalContext, vers);
+        logger.info("Got map context");
 
         ISDNAddressString msisdn = mapProvider.getMAPParameterFactory().createISDNAddressString(
                 this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getAddressNature(),
@@ -467,36 +472,57 @@ public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBea
         AddressString serviceCentreAddress = mapProvider.getMAPParameterFactory().createAddressString(
                 this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getAddressNature(),
                 this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getNumberingPlan(), serviceCentreAddr);
+
+        ISDNAddressString gmscaddress = mapProvider.getMAPParameterFactory().createISDNAddressString(
+                    this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getAddressNature(),
+                    this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getNumberingPlan(), serviceCentreAddr);
+
         curDestIsdnNumber = destIsdnNumber;
 
         try {
-            MAPDialogSms curDialog = mapProvider.getMAPServiceSms()
+            logger.info("Create new dialog");
+
+            MAPDialogCallHandling curDialog = mapProvider.getMAPServiceCallHandling()
                     .createNewDialog(
                             mapAppContext,
                             this.mapMan.createOrigAddress(),
                             null,
                             this.mapMan.createDestAddress(destIsdnNumber, this.testerHost.getConfigurationData().getTestSmsServerConfigurationData()
                                     .getHlrSsn()), null);
+
+            logger.info("Dialog created");
             HostMessageData hostMessageData = new HostMessageData();
             hostMessageData.mtMessageData = messageData;
-            curDialog.setUserObject(hostMessageData);
+            //curDialog.setUserObject(hostMessageData);
 
-            curDialog.addSendRoutingInfoForSMRequest(msisdn, true, serviceCentreAddress, null, this.testerHost.getConfigurationData()
-                    .getTestSmsServerConfigurationData().isGprsSupportIndicator(), null, null, null);
+            logger.info("Add Send Routing info");
+
+            curDialog.addSendRoutingInformationRequest(msisdn, null, 0, InterrogationType.basicCall,
+                false, null, gmscaddress, null, null, null, null, null, false, null, null, false, null, null, null,
+                false, null, false, false, false, false, null, null, null, false, null);
+//            curDialog.addSendRoutingInformationRequest(msisdn, null, 0, null);
+            logger.info("Added Send Routing info");
 
             // this cap helps us give SCCP error if any
             // curDialog.setReturnMessageOnError(true);
 
+            logger.info("Sending... ");
+
             curDialog.send();
 
+            logger.info("Sent!");
+
+            logger.info("Sending notification");
             String sriData = createSriData(curDialog.getLocalDialogId(), destIsdnNumber, serviceCentreAddr);
             currentRequestDef += "Sent SriReq;";
             this.countSriReq++;
             this.testerHost.sendNotif(SOURCE_NAME, "Sent: sriReq", sriData, Level.DEBUG);
+            logger.info("Notification sent");
 
-            return "SendRoutingInfoForSMRequest has been sent";
+            return "SendRoutingInformationRequest has been sent";
         } catch (MAPException ex) {
-            return "Exception when sending SendRoutingInfoForSMRequest: " + ex.toString();
+            logger.info("Exception when sending SendRoutingInformationRequest: " + ex.toString());
+            return "Exception when sending SendRoutingInformationRequest: " + ex.toString();
         }
     }
 
@@ -1187,6 +1213,94 @@ public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBea
     @Override
     public void onNoteSubscriberPresentRequest(NoteSubscriberPresentRequest request) {
         // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void onSendRoutingInformationRequest(SendRoutingInformationRequest request) {
+        logger.info("onSendRoutingInformationRequest");
+    }
+
+    @Override
+    public void onSendRoutingInformationResponse(SendRoutingInformationResponse response) {
+        logger.info("onSendRoutingInformationResponse");
+
+        if (!isStarted)
+            return;
+        logger.info("Processing SRI Response");
+
+        SendRoutingInformationResponseImpl ind = (SendRoutingInformationResponseImpl) response;
+        IMSI imsi = ind.getIMSI();
+        logger.info("imsi: " + imsi.getData());
+
+        SubscriberInfo si = response.getSubscriberInfo();
+        String RN = response.getExtendedRoutingInfo().getRoutingInfo().getRoamingNumber().getAddress();
+        logger.info("Roaming Number: " + RN);
+
+        String subStateChoice = si.getSubscriberState().getSubscriberStateChoice().toString();
+        logger.info("SubStateChoice: " + subStateChoice);
+        String notReachableReason = "null";
+        try{
+            notReachableReason = si.getSubscriberState().getNotReachableReason().toString();
+            logger.info("notReachableReason: " + notReachableReason);
+        }catch(Exception e){}
+
+        MAPDialog curDialog = response.getMAPDialog();
+        long invokeId = curDialog.getLocalDialogId();
+
+        logger.info("IMEI: " + si.getIMEI().getIMEI());
+
+        LocationInformation li = si.getLocationInformation();
+        String vlrNum = li.getVlrNumber().getAddress();
+
+        logger.info("vlrNum: " + vlrNum);
+
+        currentRequestDef += "Rsvd SriResp;";
+        String destImsi = li.getMscNumber().getAddress();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("dialogId=");
+        sb.append(invokeId);
+        sb.append(", ind=\"");
+        sb.append(response);
+        sb.append("\"");
+        String uData = sb.toString();
+
+        this.testerHost.sendNotif(SOURCE_NAME, "Rcvd: sriResp", uData, Level.DEBUG);
+
+        if (curDialog.getUserObject() != null && vlrNum != null && !vlrNum.equals("") && destImsi != null && !destImsi.equals("")) {
+            HostMessageData hmd = (HostMessageData) curDialog.getUserObject();
+            MtMessageData mmd = hmd.mtMessageData;
+            if (mmd != null) {
+                mmd.vlrNum = vlrNum;
+                mmd.destImsi = destImsi;
+            }
+
+            // // sending SMS
+            // doMtForwardSM(mmd.msg, destImsi, vlrNum, mmd.origIsdnNumber,
+            // this.testerHost.getConfigurationData().getTestSmsServerConfigurationData()
+            // .getServiceCenterAddress());
+        }
+
+    }
+
+    @Override
+    public void onProvideRoamingNumberRequest(ProvideRoamingNumberRequest request) {
+
+    }
+
+    @Override
+    public void onProvideRoamingNumberResponse(ProvideRoamingNumberResponse response) {
+
+    }
+
+    @Override
+    public void onIstCommandRequest(IstCommandRequest request) {
+
+    }
+
+    @Override
+    public void onIstCommandResponse(IstCommandResponse response) {
 
     }
 }

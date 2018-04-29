@@ -1,5 +1,9 @@
 # ignore .svn metadata files
 .svn
+.sts4-cache
+.vscode
+*.bak
+
 # ignore Maven generated target folders
 ~
 target
@@ -152,3 +156,4 @@ docs/sources-*/src
 /DialogIdRangeTest_management.xml
 /DialogIdleEndTest1_management.xml
 /DialogIdleEndTest2_management.xml
+tools/simulator/core/src/main/java/org/mobicents/protocols/ss7/tools/simulator/tests/sms/TestSmsServerMan.java.bak
