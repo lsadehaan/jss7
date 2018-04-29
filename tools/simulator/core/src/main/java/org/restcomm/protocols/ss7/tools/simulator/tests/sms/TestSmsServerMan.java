@@ -89,6 +89,8 @@ import org.restcomm.protocols.ss7.map.api.smstpdu.SmsTpdu;
 import org.restcomm.protocols.ss7.map.api.smstpdu.TypeOfNumber;
 import org.restcomm.protocols.ss7.map.api.smstpdu.UserData;
 import org.restcomm.protocols.ss7.map.api.smstpdu.UserDataHeader;
+import org.restcomm.protocols.ss7.map.service.callhandling.CUGCheckInfoImpl;
+import org.restcomm.protocols.ss7.map.service.callhandling.SendRoutingInformationRequestImpl;
 import org.restcomm.protocols.ss7.map.service.callhandling.SendRoutingInformationResponseImpl;
 import org.restcomm.protocols.ss7.map.smstpdu.AbsoluteTimeStampImpl;
 import org.restcomm.protocols.ss7.map.smstpdu.AddressFieldImpl;
@@ -107,6 +109,7 @@ import org.restcomm.protocols.ss7.tools.simulator.level3.MapMan;
 import org.restcomm.protocols.ss7.tools.simulator.level3.MapProtocolVersion;
 import org.restcomm.protocols.ss7.tools.simulator.level3.NumberingPlanMapType;
 import org.restcomm.protocols.ss7.tools.simulator.management.TesterHostInterface;
+import org.restcomm.protocols.ss7.map.api.service.callhandling.InterrogationType;
 
 /**
  *
@@ -503,7 +506,10 @@ public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBea
 
             logger.info("Add Send Routing info");
 
-            curDialog.addSendRoutingInformationRequest(msisdn, null, 0, null);
+            curDialog.addSendRoutingInformationRequest(msisdn, null, 0, InterrogationType.basicCall,
+                false, null, null, null, null, null, null, null, false, null, null, false, null, null, null,
+                false, null, false, false, false, false, null, null, null, false, null);
+//            curDialog.addSendRoutingInformationRequest(msisdn, null, 0, null);
             logger.info("Added Send Routing info");
 
             // this cap helps us give SCCP error if any
