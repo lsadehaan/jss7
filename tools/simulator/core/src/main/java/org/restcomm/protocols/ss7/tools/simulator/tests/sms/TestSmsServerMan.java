@@ -474,7 +474,7 @@ public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBea
             vers = MAPApplicationContextVersion.version3;
             break;
         }
-        MAPApplicationContext mapAppContext = MAPApplicationContext.getInstance(MAPApplicationContextName.shortMsgGatewayContext, vers);
+        MAPApplicationContext mapAppContext = MAPApplicationContext.getInstance(MAPApplicationContextName.locationInfoRetrievalContext, vers);
         logger.info("Got map context");
 
         ISDNAddressString msisdn = mapProvider.getMAPParameterFactory().createISDNAddressString(
