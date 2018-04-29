@@ -524,6 +524,7 @@ public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBea
 
             return "SendRoutingInformationRequest has been sent";
         } catch (MAPException ex) {
+            logger.info("Exception when sending SendRoutingInformationRequest: " + ex.toString());
             return "Exception when sending SendRoutingInformationRequest: " + ex.toString();
         }
     }
