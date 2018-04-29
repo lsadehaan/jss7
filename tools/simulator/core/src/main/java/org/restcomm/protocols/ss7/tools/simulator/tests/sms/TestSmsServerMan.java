@@ -443,6 +443,8 @@ public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBea
 
     @Override
     public String performSRIForSM(String destIsdnNumber) {
+        logger.info("entering performSRIForSM");
+
         if (!isStarted)
             return "The tester is not started";
         if (destIsdnNumber == null || destIsdnNumber.equals(""))
@@ -456,8 +458,9 @@ public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBea
     private String curDestIsdnNumber = null;
 
     private String doSendSri(String destIsdnNumber, String serviceCentreAddr, MtMessageData messageData) {
-
+        logger.info("entering doSendSri");
         MAPProvider mapProvider = this.mapMan.getMAPStack().getMAPProvider();
+        logger.info("Got map provider");
 
         MAPApplicationContextVersion vers;
         switch (this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getMapProtocolVersion().intValue()) {
@@ -472,6 +475,7 @@ public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBea
             break;
         }
         MAPApplicationContext mapAppContext = MAPApplicationContext.getInstance(MAPApplicationContextName.shortMsgGatewayContext, vers);
+        logger.info("Got map context");
 
         ISDNAddressString msisdn = mapProvider.getMAPParameterFactory().createISDNAddressString(
                 this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getAddressNature(),
@@ -482,6 +486,8 @@ public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBea
         curDestIsdnNumber = destIsdnNumber;
 
         try {
+            logger.info("Create new dialog");
+
             MAPDialogCallHandling curDialog = mapProvider.getMAPServiceCallHandling()
                     .createNewDialog(
                             mapAppContext,
@@ -489,21 +495,32 @@ public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBea
                             null,
                             this.mapMan.createDestAddress(destIsdnNumber, this.testerHost.getConfigurationData().getTestSmsServerConfigurationData()
                                     .getHlrSsn()), null);
+
+            logger.info("Dialog created");
             HostMessageData hostMessageData = new HostMessageData();
             hostMessageData.mtMessageData = messageData;
-            curDialog.setUserObject(hostMessageData);
+            //curDialog.setUserObject(hostMessageData);
+
+            logger.info("Add Send Routing info");
 
             curDialog.addSendRoutingInformationRequest(msisdn, null, 0, null);
+            logger.info("Added Send Routing info");
 
             // this cap helps us give SCCP error if any
             // curDialog.setReturnMessageOnError(true);
 
+            logger.info("Sending... ");
+
             curDialog.send();
 
+            logger.info("Sent!");
+
+            logger.info("Sending notification");
             String sriData = createSriData(curDialog.getLocalDialogId(), destIsdnNumber, serviceCentreAddr);
             currentRequestDef += "Sent SriReq;";
             this.countSriReq++;
             this.testerHost.sendNotif(SOURCE_NAME, "Sent: sriReq", sriData, Level.DEBUG);
+            logger.info("Notification sent");
 
             return "SendRoutingInformationRequest has been sent";
         } catch (MAPException ex) {

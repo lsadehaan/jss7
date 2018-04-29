@@ -356,7 +356,7 @@ public class SccpMan implements SccpManMBean, Stoppable {
     }
 
     protected SccpStackImpl createSccpStack() {
-        return new SccpStackImpl("TestingSccp", null);
+        return new SccpStackImpl("TestingSccp");
     }
 
     protected void sccpConfigExt(int opc, int dpc, int dpc2, int localSsn) throws Exception {
