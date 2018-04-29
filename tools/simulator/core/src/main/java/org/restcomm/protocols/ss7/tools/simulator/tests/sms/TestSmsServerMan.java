@@ -43,6 +43,7 @@ import org.restcomm.protocols.ss7.map.api.primitives.IMSI;
 import org.restcomm.protocols.ss7.map.api.primitives.ISDNAddressString;
 import org.restcomm.protocols.ss7.map.api.primitives.MAPExtensionContainer;
 import org.restcomm.protocols.ss7.map.api.primitives.NumberingPlan;
+import org.restcomm.protocols.ss7.map.api.service.callhandling.InterrogationType;
 import org.restcomm.protocols.ss7.map.api.service.callhandling.IstCommandRequest;
 import org.restcomm.protocols.ss7.map.api.service.callhandling.IstCommandResponse;
 import org.restcomm.protocols.ss7.map.api.service.callhandling.MAPDialogCallHandling;
@@ -89,8 +90,6 @@ import org.restcomm.protocols.ss7.map.api.smstpdu.SmsTpdu;
 import org.restcomm.protocols.ss7.map.api.smstpdu.TypeOfNumber;
 import org.restcomm.protocols.ss7.map.api.smstpdu.UserData;
 import org.restcomm.protocols.ss7.map.api.smstpdu.UserDataHeader;
-import org.restcomm.protocols.ss7.map.service.callhandling.CUGCheckInfoImpl;
-import org.restcomm.protocols.ss7.map.service.callhandling.SendRoutingInformationRequestImpl;
 import org.restcomm.protocols.ss7.map.service.callhandling.SendRoutingInformationResponseImpl;
 import org.restcomm.protocols.ss7.map.smstpdu.AbsoluteTimeStampImpl;
 import org.restcomm.protocols.ss7.map.smstpdu.AddressFieldImpl;
@@ -109,7 +108,6 @@ import org.restcomm.protocols.ss7.tools.simulator.level3.MapMan;
 import org.restcomm.protocols.ss7.tools.simulator.level3.MapProtocolVersion;
 import org.restcomm.protocols.ss7.tools.simulator.level3.NumberingPlanMapType;
 import org.restcomm.protocols.ss7.tools.simulator.management.TesterHostInterface;
-import org.restcomm.protocols.ss7.map.api.service.callhandling.InterrogationType;
 
 /**
  *
