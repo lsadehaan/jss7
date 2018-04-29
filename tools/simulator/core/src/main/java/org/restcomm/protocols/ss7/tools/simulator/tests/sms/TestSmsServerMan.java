@@ -484,6 +484,11 @@ public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBea
         AddressString serviceCentreAddress = mapProvider.getMAPParameterFactory().createAddressString(
                 this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getAddressNature(),
                 this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getNumberingPlan(), serviceCentreAddr);
+
+        ISDNAddressString gmscaddress = mapProvider.getMAPParameterFactory().createISDNAddressString(
+                    this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getAddressNature(),
+                    this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getNumberingPlan(), serviceCentreAddr);
+
         curDestIsdnNumber = destIsdnNumber;
 
         try {
@@ -505,7 +510,7 @@ public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBea
             logger.info("Add Send Routing info");
 
             curDialog.addSendRoutingInformationRequest(msisdn, null, 0, InterrogationType.basicCall,
-                false, null, null, null, null, null, null, null, false, null, null, false, null, null, null,
+                false, null, gmscaddress, null, null, null, null, null, false, null, null, false, null, null, null,
                 false, null, false, false, false, false, null, null, null, false, null);
 //            curDialog.addSendRoutingInformationRequest(msisdn, null, 0, null);
             logger.info("Added Send Routing info");
