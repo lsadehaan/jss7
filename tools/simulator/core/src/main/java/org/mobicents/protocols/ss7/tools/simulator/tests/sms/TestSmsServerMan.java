@@ -511,7 +511,7 @@ public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBea
 
             curDialog.addSendRoutingInformationRequest(msisdn, null, 1, InterrogationType.basicCall,
                 false, null, gmscaddress, null, null, null, null, null, false, null, null, false, null, null, null,
-                false, null, false, false, false, false, null, null, null, false, null);
+                false, null, false, false, false, true, null, null, null, false, null);
 //            curDialog.addSendRoutingInformationRequest(msisdn, null, 0, null);
             logger.info("Added Send Routing info");
 
