@@ -487,7 +487,7 @@ public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBea
 
         ISDNAddressString gmscaddress = mapProvider.getMAPParameterFactory().createISDNAddressString(
                     this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getAddressNature(),
-                    this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getNumberingPlan(), serviceCentreAddr);
+                    this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getNumberingPlan(), "000");
 
         curDestIsdnNumber = destIsdnNumber;
 
@@ -511,7 +511,7 @@ public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBea
 
             curDialog.addSendRoutingInformationRequest(msisdn, null, null, InterrogationType.basicCall,
                 false, null, gmscaddress, null, null, null, null, null, false, null, null, false, null, null, null,
-                false, null, false, false, false, true, null, null, null, false, null);
+                false, null, false, false, false, false, null, null, null, false, null);
 //            curDialog.addSendRoutingInformationRequest(msisdn, null, 0, null);
             logger.info("Added Send Routing info");
 
