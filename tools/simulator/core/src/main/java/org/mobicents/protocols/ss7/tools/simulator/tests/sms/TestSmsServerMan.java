@@ -487,7 +487,7 @@ public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBea
 
         ISDNAddressString gmscaddress = mapProvider.getMAPParameterFactory().createISDNAddressString(
                     this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getAddressNature(),
-                    this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getNumberingPlan(), "000");
+                    this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getNumberingPlan(), serviceCentreAddr);
 
         curDestIsdnNumber = destIsdnNumber;
 
