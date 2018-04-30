@@ -1237,40 +1237,68 @@ public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBea
     public void onSendRoutingInformationResponse(SendRoutingInformationResponse response) {
         logger.info("onSendRoutingInformationResponse");
 
+
         if (!isStarted)
             return;
         logger.info("Processing SRI Response");
 
-        SendRoutingInformationResponseImpl ind = (SendRoutingInformationResponseImpl) response;
-        IMSI imsi = ind.getIMSI();
-        logger.info("imsi: " + imsi.getData());
-
-        SubscriberInfo si = response.getSubscriberInfo();
-        String RN = response.getExtendedRoutingInfo().getRoutingInfo().getRoamingNumber().getAddress();
-        logger.info("Roaming Number: " + RN);
-
-        String subStateChoice = si.getSubscriberState().getSubscriberStateChoice().toString();
-        logger.info("SubStateChoice: " + subStateChoice);
-        String notReachableReason = "null";
-        try{
-            notReachableReason = si.getSubscriberState().getNotReachableReason().toString();
-            logger.info("notReachableReason: " + notReachableReason);
-        }catch(Exception e){}
-
         MAPDialog curDialog = response.getMAPDialog();
         long invokeId = curDialog.getLocalDialogId();
 
-        logger.info("IMEI: " + si.getIMEI().getIMEI());
+        try{
 
-        LocationInformation li = si.getLocationInformation();
-        String vlrNum = li.getVlrNumber().getAddress();
+            SendRoutingInformationResponseImpl ind = (SendRoutingInformationResponseImpl) response;
+            IMSI imsi = ind.getIMSI();
+            logger.info("imsi: " + imsi.getData());
 
-        logger.info("vlrNum: " + vlrNum);
+            SubscriberInfo si = response.getSubscriberInfo();
+            String RN = response.getExtendedRoutingInfo().getRoutingInfo().getRoamingNumber().getAddress();
+            logger.info("Roaming Number: " + RN);
 
-        currentRequestDef += "Rsvd SriResp;";
-        String destImsi = li.getMscNumber().getAddress();
+            logger.info("IMEI: " + si.getIMEI().getIMEI());
 
-        StringBuilder sb = new StringBuilder();
+            if (si.getSubscriberState() != null) {
+                String subStateChoice = si.getSubscriberState().getSubscriberStateChoice().toString();
+                logger.info("SubStateChoice: " + subStateChoice);
+                String notReachableReason = "null";
+                try{
+                    notReachableReason = si.getSubscriberState().getNotReachableReason().toString();
+                    logger.info("notReachableReason: " + notReachableReason);
+                }catch(Exception e){}
+            }
+
+
+
+            LocationInformation li = si.getLocationInformation();
+            String vlrNum = null;
+            if (li.getVlrNumber() != null) {
+                vlrNum = li.getVlrNumber().getAddress();
+                logger.info("vlrNum: " + vlrNum);
+            }
+
+            String destImsi = null;
+            if (li.getVlrNumber() != null) {
+                currentRequestDef += "Rsvd SriResp;";
+                destImsi = li.getMscNumber().getAddress();
+            }
+
+            if (curDialog.getUserObject() != null && vlrNum != null && !vlrNum.equals("") && destImsi != null && !destImsi.equals("")) {
+                HostMessageData hmd = (HostMessageData) curDialog.getUserObject();
+                MtMessageData mmd = hmd.mtMessageData;
+                if (mmd != null) {
+                    mmd.vlrNum = vlrNum;
+                    mmd.destImsi = destImsi;
+                }
+
+                // // sending SMS
+                // doMtForwardSM(mmd.msg, destImsi, vlrNum, mmd.origIsdnNumber,
+                // this.testerHost.getConfigurationData().getTestSmsServerConfigurationData()
+                // .getServiceCenterAddress());
+            }
+
+        }catch(Exception e){}
+
+    StringBuilder sb = new StringBuilder();
         sb.append("dialogId=");
         sb.append(invokeId);
         sb.append(", ind=\"");
@@ -1279,20 +1307,6 @@ public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBea
         String uData = sb.toString();
 
         this.testerHost.sendNotif(SOURCE_NAME, "Rcvd: sriResp", uData, Level.DEBUG);
-
-        if (curDialog.getUserObject() != null && vlrNum != null && !vlrNum.equals("") && destImsi != null && !destImsi.equals("")) {
-            HostMessageData hmd = (HostMessageData) curDialog.getUserObject();
-            MtMessageData mmd = hmd.mtMessageData;
-            if (mmd != null) {
-                mmd.vlrNum = vlrNum;
-                mmd.destImsi = destImsi;
-            }
-
-            // // sending SMS
-            // doMtForwardSM(mmd.msg, destImsi, vlrNum, mmd.origIsdnNumber,
-            // this.testerHost.getConfigurationData().getTestSmsServerConfigurationData()
-            // .getServiceCenterAddress());
-        }
 
     }
 
