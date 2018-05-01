@@ -1,5 +1,8 @@
 # ignore .svn metadata files
 .svn
+.sts4-cache
+.vscode
+*.bak
 # ignore Maven generated target folders
 ~
 target
@@ -152,3 +155,4 @@ docs/sources-*/src
 /DialogIdRangeTest_management.xml
 /DialogIdleEndTest1_management.xml
 /DialogIdleEndTest2_management.xml
+cap/cap-api/.sts4-cache/classpath-data.json

@@ -96,12 +96,14 @@ import org.mobicents.protocols.ss7.tools.simulator.level3.MapProtocolVersion;
 import org.mobicents.protocols.ss7.tools.simulator.level3.NumberingPlanMapType;
 import org.mobicents.protocols.ss7.tools.simulator.management.TesterHost;
 
+import org.apache.log4j.Logger;
 /**
  *
  * @author sergey vetyutnev
  *
  */
 public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBean, Stoppable, MAPDialogListener, MAPServiceSmsListener {
+    private static Logger logger = Logger.getLogger(TestSmsServerMan.class);
 
     public static String SOURCE_NAME = "TestSmsServer";
 
@@ -860,6 +862,8 @@ public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBea
 
     @Override
     public void onSendRoutingInfoForSMResponse(SendRoutingInfoForSMResponse ind) {
+        logger.info("Entering onSendRoutingInfoForSMResponse");
+
         if (!isStarted)
             return;
 
@@ -1068,6 +1072,47 @@ public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBea
                 doMtForwardSM(mmd.msg, mmd.destImsi, mmd.vlrNum, mmd.origIsdnNumber, this.testerHost.getConfigurationData().getTestSmsServerConfigurationData()
                         .getServiceCenterAddress());
             }
+        }else
+        {
+            //--------
+            try {
+                MAPProvider mapProvider = this.mapMan.getMAPStack().getMAPProvider();
+                MAPApplicationContextVersion vers = mapDialog.getApplicationContext().getApplicationContextVersion();
+                MAPApplicationContext mapAppContext = MAPApplicationContext.getInstance(MAPApplicationContextName.shortMsgGatewayContext, vers);
+
+                MAPDialogSms curDialog = mapProvider.getMAPServiceSms().createNewDialog(
+                        mapAppContext,
+                        this.mapMan.createOrigAddress(),
+                        null,
+                        this.mapMan.createDestAddress(curDestIsdnNumber, this.testerHost.getConfigurationData().getTestSmsServerConfigurationData()
+                                .getHlrSsn()), null);
+
+                ISDNAddressString msisdn = mapProvider.getMAPParameterFactory().createISDNAddressString(
+                        this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getAddressNature(),
+                        this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getNumberingPlan(), curDestIsdnNumber);
+                AddressString serviceCentreAddress = mapProvider.getMAPParameterFactory().createAddressString(
+                        this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getAddressNature(),
+                        this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getNumberingPlan(), this.getServiceCenterAddress());
+                curDestIsdnNumber = null;
+
+                SMDeliveryOutcome sMDeliveryOutcome = null;
+                if (vers.getVersion() >= 2) {
+                        sMDeliveryOutcome = SMDeliveryOutcome.absentSubscriber;
+                }
+
+                curDialog.addReportSMDeliveryStatusRequest(msisdn, serviceCentreAddress, sMDeliveryOutcome, null, null, false, false, null, null);
+                curDialog.send();
+
+                currentRequestDef += "Sent RsmdsReq;";
+                this.countRsmdsReq++;
+                String rsmdsData = "msisdn=" + msisdn + ", serviceCentreAddress=" + serviceCentreAddress + ", sMDeliveryOutcome=" + sMDeliveryOutcome;
+                this.testerHost.sendNotif(SOURCE_NAME, "Sent: rsmdsReq", rsmdsData, Level.DEBUG);
+            } catch (MAPException e) {
+                this.testerHost.sendNotif(SOURCE_NAME, "Exception when invoking reportSMDeliveryStatusRequest : " + e.getMessage(), e, Level.ERROR);
+            }
+
+
+            //--------
         }
 
         try {
