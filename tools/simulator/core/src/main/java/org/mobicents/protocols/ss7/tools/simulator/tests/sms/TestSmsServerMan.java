@@ -1064,6 +1064,8 @@ public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBea
 
     @Override
     public void onDialogClose(MAPDialog mapDialog) {
+        logger.info("Entering onDialogClose");
+
         if (mapDialog.getUserObject() != null) {
             HostMessageData hmd = (HostMessageData) mapDialog.getUserObject();
             MtMessageData mmd = hmd.mtMessageData;
@@ -1074,10 +1076,14 @@ public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBea
             }
         }else {
             //--------
+            logger.info("trying to send ReportSMDeliveryStatusRequest");
+
             try {
                 MAPProvider mapProvider = this.mapMan.getMAPStack().getMAPProvider();
                 MAPApplicationContextVersion vers = mapDialog.getApplicationContext().getApplicationContextVersion();
                 MAPApplicationContext mapAppContext = MAPApplicationContext.getInstance(MAPApplicationContextName.shortMsgGatewayContext, vers);
+
+                logger.info("Getting MAP dialog");
 
                 MAPDialogSms curDialog = mapProvider.getMAPServiceSms().createNewDialog(
                         mapAppContext,
@@ -1094,13 +1100,18 @@ public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBea
                         this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getNumberingPlan(), this.getServiceCenterAddress());
                 curDestIsdnNumber = null;
 
+                logger.info("Delivery Outcome set to null");
                 SMDeliveryOutcome sMDeliveryOutcome = null;
                 if (vers.getVersion() >= 2) {
                         sMDeliveryOutcome = SMDeliveryOutcome.absentSubscriber;
-                }
+                        logger.info("Delivery Outcome set to absent");
+                    }
 
+                logger.info("Adding ReportSMDeliveryStatusRequest");
                 curDialog.addReportSMDeliveryStatusRequest(msisdn, serviceCentreAddress, sMDeliveryOutcome, null, null, false, false, null, null);
+                logger.info("Sending ReportSMDeliveryStatusRequest");
                 curDialog.send();
+                logger.info("Sent ReportSMDeliveryStatusRequest");
 
                 currentRequestDef += "Sent RsmdsReq;";
                 this.countRsmdsReq++;
