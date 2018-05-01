@@ -1072,8 +1072,7 @@ public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBea
                 doMtForwardSM(mmd.msg, mmd.destImsi, mmd.vlrNum, mmd.origIsdnNumber, this.testerHost.getConfigurationData().getTestSmsServerConfigurationData()
                         .getServiceCenterAddress());
             }
-        }else
-        {
+        }else {
             //--------
             try {
                 MAPProvider mapProvider = this.mapMan.getMAPStack().getMAPProvider();
