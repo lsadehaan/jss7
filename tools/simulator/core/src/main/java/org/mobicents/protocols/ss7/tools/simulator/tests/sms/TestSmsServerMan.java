@@ -1067,62 +1067,65 @@ public class TestSmsServerMan extends TesterBase implements TestSmsServerManMBea
         logger.info("Entering onDialogClose");
 
         if (mapDialog.getUserObject() != null) {
+            logger.info("NOTE: getUserObject() != null");
+
             HostMessageData hmd = (HostMessageData) mapDialog.getUserObject();
             MtMessageData mmd = hmd.mtMessageData;
             if (mmd != null && mmd.vlrNum != null && mmd.destImsi != null) {
                 // sending SMS
+                logger.info("Sending MtForwardSM");
                 doMtForwardSM(mmd.msg, mmd.destImsi, mmd.vlrNum, mmd.origIsdnNumber, this.testerHost.getConfigurationData().getTestSmsServerConfigurationData()
                         .getServiceCenterAddress());
+            }else {
+                //--------
+                logger.info("mtMessageData = null -> trying to send ReportSMDeliveryStatusRequest");
+
+                try {
+                    MAPProvider mapProvider = this.mapMan.getMAPStack().getMAPProvider();
+                    MAPApplicationContextVersion vers = mapDialog.getApplicationContext().getApplicationContextVersion();
+                    MAPApplicationContext mapAppContext = MAPApplicationContext.getInstance(MAPApplicationContextName.shortMsgGatewayContext, vers);
+
+                    logger.info("Getting MAP dialog");
+
+                    MAPDialogSms curDialog = mapProvider.getMAPServiceSms().createNewDialog(
+                            mapAppContext,
+                            this.mapMan.createOrigAddress(),
+                            null,
+                            this.mapMan.createDestAddress(curDestIsdnNumber, this.testerHost.getConfigurationData().getTestSmsServerConfigurationData()
+                                    .getHlrSsn()), null);
+
+                    ISDNAddressString msisdn = mapProvider.getMAPParameterFactory().createISDNAddressString(
+                            this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getAddressNature(),
+                            this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getNumberingPlan(), curDestIsdnNumber);
+                    AddressString serviceCentreAddress = mapProvider.getMAPParameterFactory().createAddressString(
+                            this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getAddressNature(),
+                            this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getNumberingPlan(), this.getServiceCenterAddress());
+                    curDestIsdnNumber = null;
+
+                    logger.info("Delivery Outcome set to null");
+                    SMDeliveryOutcome sMDeliveryOutcome = null;
+                    if (vers.getVersion() >= 2) {
+                            sMDeliveryOutcome = SMDeliveryOutcome.absentSubscriber;
+                            logger.info("Delivery Outcome set to absent");
+                        }
+
+                    logger.info("Adding ReportSMDeliveryStatusRequest");
+                    curDialog.addReportSMDeliveryStatusRequest(msisdn, serviceCentreAddress, sMDeliveryOutcome, null, null, false, false, null, null);
+                    logger.info("Sending ReportSMDeliveryStatusRequest");
+                    curDialog.send();
+                    logger.info("Sent ReportSMDeliveryStatusRequest");
+
+                    currentRequestDef += "Sent RsmdsReq;";
+                    this.countRsmdsReq++;
+                    String rsmdsData = "msisdn=" + msisdn + ", serviceCentreAddress=" + serviceCentreAddress + ", sMDeliveryOutcome=" + sMDeliveryOutcome;
+                    this.testerHost.sendNotif(SOURCE_NAME, "Sent: rsmdsReq", rsmdsData, Level.DEBUG);
+                } catch (MAPException e) {
+                    this.testerHost.sendNotif(SOURCE_NAME, "Exception when invoking reportSMDeliveryStatusRequest : " + e.getMessage(), e, Level.ERROR);
+                }
+
+
+                //--------
             }
-        }else {
-            //--------
-            logger.info("trying to send ReportSMDeliveryStatusRequest");
-
-            try {
-                MAPProvider mapProvider = this.mapMan.getMAPStack().getMAPProvider();
-                MAPApplicationContextVersion vers = mapDialog.getApplicationContext().getApplicationContextVersion();
-                MAPApplicationContext mapAppContext = MAPApplicationContext.getInstance(MAPApplicationContextName.shortMsgGatewayContext, vers);
-
-                logger.info("Getting MAP dialog");
-
-                MAPDialogSms curDialog = mapProvider.getMAPServiceSms().createNewDialog(
-                        mapAppContext,
-                        this.mapMan.createOrigAddress(),
-                        null,
-                        this.mapMan.createDestAddress(curDestIsdnNumber, this.testerHost.getConfigurationData().getTestSmsServerConfigurationData()
-                                .getHlrSsn()), null);
-
-                ISDNAddressString msisdn = mapProvider.getMAPParameterFactory().createISDNAddressString(
-                        this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getAddressNature(),
-                        this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getNumberingPlan(), curDestIsdnNumber);
-                AddressString serviceCentreAddress = mapProvider.getMAPParameterFactory().createAddressString(
-                        this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getAddressNature(),
-                        this.testerHost.getConfigurationData().getTestSmsServerConfigurationData().getNumberingPlan(), this.getServiceCenterAddress());
-                curDestIsdnNumber = null;
-
-                logger.info("Delivery Outcome set to null");
-                SMDeliveryOutcome sMDeliveryOutcome = null;
-                if (vers.getVersion() >= 2) {
-                        sMDeliveryOutcome = SMDeliveryOutcome.absentSubscriber;
-                        logger.info("Delivery Outcome set to absent");
-                    }
-
-                logger.info("Adding ReportSMDeliveryStatusRequest");
-                curDialog.addReportSMDeliveryStatusRequest(msisdn, serviceCentreAddress, sMDeliveryOutcome, null, null, false, false, null, null);
-                logger.info("Sending ReportSMDeliveryStatusRequest");
-                curDialog.send();
-                logger.info("Sent ReportSMDeliveryStatusRequest");
-
-                currentRequestDef += "Sent RsmdsReq;";
-                this.countRsmdsReq++;
-                String rsmdsData = "msisdn=" + msisdn + ", serviceCentreAddress=" + serviceCentreAddress + ", sMDeliveryOutcome=" + sMDeliveryOutcome;
-                this.testerHost.sendNotif(SOURCE_NAME, "Sent: rsmdsReq", rsmdsData, Level.DEBUG);
-            } catch (MAPException e) {
-                this.testerHost.sendNotif(SOURCE_NAME, "Exception when invoking reportSMDeliveryStatusRequest : " + e.getMessage(), e, Level.ERROR);
-            }
-
-
-            //--------
         }
 
         try {
